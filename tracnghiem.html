@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trò chơi 100 ô — Trắc nghiệm Hồ Chí Minh</title>
+  <link rel="stylesheet" href="style.css"> <!-- dùng style chung của bạn -->
+
+</head>
+<body>
+  <ul class="menu">
+    <img  src="Logo.png" alt="Logo", width="75pt", height="75pt", align = "left", class="logo">
+    <img  src="mac-lenin.jpg" alt="Logo", width="100pt", height="75pt", align = "left", class="logo">
+    <li><a href="index.html">Trang chủ</a></li>
+    <li><a href="tieusu.html">Tiểu sử</a></li>
+    <li><a href="sunghiep.html">Sự nghiệp</a></li>
+    <li><a href="TuTuongHCM.html">Tư tưởng Hồ Chí Minh</a></li>
+    <li><a href="tracnghiem.html" class="active">Câu hỏi trắc nghiệm</a></li>
+    <li><a href="suthat.html">Sự thật thú vị</a></li>
+    <li><a href="lienhe.html">Liên hệ</a></li>
+    <img  src="khoa-ly-luan.png" alt="Logo", width="75pt", height="75pt", align = "right", class="logo">
+  </ul>
+
+  <div class="content">
+    <h2 style="text-align:center;color:#b94a67">Trò chơi 100 ô — Trắc nghiệm về Chủ tịch Hồ Chí Minh</h2>
+
+    <div class="grid-wrap">
+      <div class="controls">
+        <button id="resetAll" class="btn">Làm lại toàn bộ</button>
+        <button id="showStats" class="btn secondary">Thống kê</button>
+        <div id="info" style="align-self:center;color:#666;font-weight:600"></div>
+      </div>
+
+      <div id="grid" class="grid" aria-label="Lưới 100 ô"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="overlay" class="overlay hidden" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 id="modalQuestion"></h3>
+      <div id="modalOptions" class="opts"></div>
+
+      <div id="feedback" class="feedback"></div>
+      <div id="explanation" class="explain"></div>
+
+      <div class="footer">
+        <button id="closeBtn" class="btn secondary">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== Câu hỏi (10 câu mẫu) ======
+    const questions = [
+      {
+        q: "“Đảng lấy chủ nghĩa Mác - Lênin và tư tưởng Hồ Chí Minh làm nền tảng tư tưởng, kim chỉ nam cho hành động”, câu nói trên lần đầu tiên được Đảng Cộng sản Việt Nam khẳng định tại:",
+        opts: ["Đại hội Đảng toàn quốc lần thứ IV (1976)","Đại hội Đảng toàn quốc lần thứ V (1981)","Đại hội Đảng toàn quốc lần thứ VI (1986)","Đại hội Đảng toàn quốc lần thứ VII (1991)"],
+        correct: 3,
+        exp: "Câu nói này được khẳng định tại Đại hội Đảng toàn quốc lần thứ VII (1991).",
+      },
+      {
+        q: "Nội dung cốt lõi của tư tưởng Hồ Chí Minh là:",
+        opts: ["Độc lập dân tộc gắn liền với chủ nghĩa xã hội","Giải phóng dân tộc","Giải phóng giai cấp","Giải phóng con người"],
+        correct: 0,
+        exp: "Nội dung cốt lõi của tư tưởng Hồ Chí Minh là độc lập dân tộc gắn liền với chủ nghĩa xã hội.",
+      },
+      {
+        q: "UNESCO ra Nghị quyết 24C/18.65 tôn vinh Chủ tịch Hồ Chí Minh là Anh hùng giải phóng dân tộc và danh nhân văn hóa kiệt xuất vào năm:",
+        opts: ["1969","1975","1987","1990"],
+        correct: 2,
+        exp: "UNESCO ra Nghị quyết 24C/18.65 vào năm 1987.",
+      },
+      {
+        q: "Một trong những nguồn gốc của tư tưởng Hồ Chí Minh là tiếp thu:",
+        opts: [". Lòng nhân ái, đức hy sinh của Hồi giáo.","Các giá trị văn hóa tiến bộ của thời kỳ Phục hưng.","Giá trị truyền thống dân tộc.","Văn hóa Phục hưng"],
+        correct: 2,
+        exp: "Một trong những nguồn gốc của tư tưởng Hồ Chí Minh là tiếp thu giá trị truyền thống dân tộc.",
+      },
+      {
+        q: "Một trong những nguồn gốc của tư tưởng Hồ Chí Minh là tiếp thu:",
+        opts: ["Tinh hoa văn hóa nhân loại.","Các giá trị văn hóa tiến bộ của thời kỳ Phục hưng.","Toàn bộ tư tưởng của các nhà khai sáng.","Lòng nhân ái, đức hy sinh của Hồi giáo."],
+        correct: 0,
+        exp: "Một trong những nguồn gốc của tư tưởng Hồ Chí Minh là tiếp thu tinh hoa văn hóa nhân loại.",
+      },
+      {
+        q: "“Dân tộc ta, nhân dân ta, non sông đất nước ta đã sinh ra Hồ Chủ tịch, Người anh hùng dân tộc vĩ đại, và chính Người đã làm rạng rỡ dân tộc ta, nhân dân ta và non sông đất nước ta”. Đó là khẳng định của:",
+        opts: ["Đồng chí Võ Nguyên Giáp","Đồng chí Trường Chinh","Đồng chí Phạm Văn Đồng","Ban Chấp hành Trung ương Đảng Lao động Việt Nam"],
+        correct: 3,
+        exp: "Đó là khẳng định của Ban Chấp hành Trung ương Đảng Lao động Việt Nam.",
+      },
+      {
+        q: "Ngày 21/6/1925, tờ báo do Hồ Chí Minh sáng lập xuất bản số đầu tiên, đánh dấu sự ra đời của nền báo chí cách mạng Việt Nam. Tờ báo đó là:",
+        opts: ["Báo Thanh niên","Báo Người cùng khổ (Le Paria)","Báo Nhân dân","Báo Tuổi trẻ"],
+        correct: 0,
+        exp: "Tờ báo đó là Báo Thanh niên.",
+      },
+      {
+        q: "'Luận cương của V. I. Lênin làm cho tôi rất cảm động, phấn khởi, sáng tỏ, tin tưởng biết bao. Tôi vui mừng đến phát khóc lên. Ngồi một mình trong buồng mà tôi nói to lên như đang nói trước quần chúng đông đảo: Hỡi đồng bào bị đọa đày đau khổ, đây là cái cần thiết cho chúng ta, đây là con đường giải phóng của chúng ta'. Nguyễn Ái Quốc nói câu ấy khi đang ở đâu?" ,
+        opts: ["Luân Đôn, Anh","Quảng Châu, Trung Quốc","Paris, Pháp","Matxcơva, Nga"],
+        correct: 2,
+        exp: "Câu nói này được Nguyễn Ái Quốc nói khi đang ở Paris, Pháp.",
+      },
+      {
+        q: "Giai đoạn tìm tòi con đường cứu nước, giải phóng dân tộc của Chủ tịch Hồ Chí Minh được tính từ:",
+        opts: ["1890 - 1911","1911 - 1920","1921 - 1930.","1930 - 1941"],
+        correct: 1,
+        exp: "Giai đoạn tìm tòi con đường cứu nước, giải phóng dân tộc của Chủ tịch Hồ Chí Minh được tính từ 1911 - 1920.",
+      },
+      {
+        q: "Giai đoạn hình thành cơ bản tư tưởng về con đường cách mạng Việt Nam của Chủ tịch Hồ Chí Minh được tính từ:",
+        opts: ["1911 - 1920","1921 - 1930","1930 - 1941","1941 - 1969"],
+        correct: 1,
+        exp: "Giai đoạn hình thành cơ bản tư tưởng về con đường cách mạng Việt Nam của Chủ tịch Hồ Chí Minh được tính từ 1921 - 1930.",
+      },
+
+      {
+        q: "Giai đoạn hình thành tư tưởng yêu nước và chí hướng cứu nước của Chủ tịch Hồ Chí Minh được tính từ:",
+        opts: ["1890 - 1911","1911 - 1920","1921 - 1930.","1930 - 1941"],
+        correct: 0,
+        exp: "Giai đoạn hình thành tư tưởng yêu nước và chí hướng cứu nước của Chủ tịch Hồ Chí Minh được tính từ 1890 - 1911.",
+      },
+      {
+        q: "Giai đoạn vượt qua thử thách, kiên trì giữ vững lập trường cách mạng của Chủ tịch Hồ Chí Minh được tính từ:",
+        opts: ["1911 - 1920","1921 - 1930","1930 - 1941","1941 - 1969"],
+        correct: 2,
+        exp: "Giai đoạn vượt qua thử thách, kiên trì giữ vững lập trường cách mạng của Chủ tịch Hồ Chí Minh được tính từ 1930 - 1941.",
+      },
+      {
+        q: "Giai đoạn tư tưởng Hồ Chí Minh tiếp tục phát triển hoàn thiện được tính từ:",
+        opts: ["1911 - 1920","1921 - 1930","1930 - 1941","1941 - 1969"],
+        correct: 3,
+        exp: "Giai đoạn tư tưởng Hồ Chí Minh tiếp tục phát triển hoàn thiện được tính từ 1941 - 1969.",
+      },
+      {
+        q: "Nguồn gốc quyết định bản chất tư tưởng Hồ Chí Minh là:",
+        opts: ["Giá trị truyền thống dân tộc","Chủ nghĩa Mác - Lênin","Tinh hoa văn hóa nhân loại","Phẩm chất cá nhân Hồ Chí Minh"],
+        correct: 1,
+        exp: "Nguồn gốc quyết định bản chất tư tưởng Hồ Chí Minh là Chủ nghĩa Mác - Lênin.",
+      },
+      {
+        q: "Năm 1925, Hồ Chí Minh đã cải tổ Tâm Tâm xã thành tổ chức nào?",
+        opts: ["Hội Việt Nam Cách mạng thanh niên","Đảng Phục Việt","Đảng Hưng Nam","Việt Nam Quốc dân Đảng"],
+        correct: 0,
+        exp: "Năm 1925, Hồ Chí Minh đã cải tổ Tâm Tâm xã thành Hội Việt Nam Cách mạng thanh niên.",
+      },
+      {
+        q: "Một trong những nội dung cơ bản trong bản Yêu sách gồm tám điểm của Nguyễn Ái Quốc gửi đến Hội nghị Vecxây (Pháp) là:",
+        opts: ["Đòi quyền tự do dân chủ tối thiểu cho nhân dân An Nam.","Đòi quyền độc lập dân tộc.","Đòi quyền tự trị của dân tộc.","Cả 3 ý đều sai."],
+        correct: 0,
+        exp: "Một trong những nội dung cơ bản trong bản Yêu sách gồm tám điểm của Nguyễn Ái Quốc gửi đến Hội nghị Vecxây (Pháp) là đòi quyền tự do dân chủ tối thiểu cho nhân dân An Nam.",
+      },
+      {
+        q: "Lãnh tụ Nguyễn Ái Quốc đi tìm đường cứu nước khi nào?",
+        opts: ["5/6/1910","6/5/1911","5/6/1911","19/5/1911"],
+        correct: 2,
+        exp: "Lãnh tụ Nguyễn Ái Quốc đi tìm đường cứu nước vào ngày 5/6/1911.",
+      },
+      {
+        q: "Khi xuống con tàu Latusơ Tơrêvin đi tìm đường cứu nước, Bác Hồ lấy tên gọi là:",
+        opts: ["Nguyễn Sinh Cung","Nguyễn Tất Thành","Nguyễn Ái Quốc","Văn Ba"],
+        correct: 3,
+        exp: "Khi xuống con tàu Latusơ Tơrêvin đi tìm đường cứu nước, Bác Hồ lấy tên gọi là Văn Ba.",
+      },
+      {
+        q: "Nguyễn Ái Quốc tìm thấy con đường giải phóng dân tộc theo khuynh hướng chính trị vô sản vào thời gian nào? Ở đâu?",
+        opts: ["6/1919 - Pháp","12/1920 - Pháp","7/1920 - Liên Xô","7/1920 - Pháp"],
+        correct: 3,
+        exp: "Nguyễn Ái Quốc tìm thấy con đường giải phóng dân tộc theo khuynh hướng chính trị vô sản vào tháng 7 năm 1920 tại Pháp.",
+      },
+      {
+        q: "Nguyễn Ái Quốc đọc Sơ thảo lần thứ nhất Luận cương về những vấn đề dân tộc và vấn đề thuộc địa của Lênin khi nào? Ở đâu?",
+        opts: ["7/1920 - Liên Xô","7/1920 - Pháp","7/ 1920 - Trung Quốc","7/ 1920 - Anh"],
+        correct: 1,
+        exp: "Nguyễn Ái Quốc đọc Sơ thảo lần thứ nhất Luận cương về những vấn đề dân tộc và vấn đề thuộc địa của Lênin vào tháng 7 năm 1920 tại Pháp.",
+      },
+
+      {
+        q: "Khi giải thích về con đường đến với chủ nghĩa Lênin, Chủ tịch Hồ Chí Minh viết: 'Lúc đầu, chính là (....), chứ chưa phải chủ nghĩa cộng sản đã đưa tôi tin theo Lênin, tin theo Quốc tế thứ ba'. Hãy điền vào chỗ còn thiếu:",
+        opts: ["Chủ nghĩa Mác","Lòng yêu nước","Chủ nghĩa dân tộc","Chủ nghĩa yêu nước"],
+        correct: 3,
+        exp: "Chủ tịch Hồ Chí Minh viết: 'Lúc đầu, chính là chủ nghĩa yêu nước, chứ chưa phải chủ nghĩa cộng sản đã đưa tôi tin theo Lênin, tin theo Quốc tế thứ ba'.",
+      },
+      {
+        q: "Lãnh tụ Nguyễn Ái Quốc sau 30 năm tìm đường cứu nước đã trở về Tổ quốc vào ngày:",
+        opts: ["28/1/1941","8/2/1943","28/1/1942","8/2/1944"],
+        correct: 0,
+        exp: "Lãnh tụ Nguyễn Ái Quốc sau 30 năm tìm đường cứu nước đã trở về Tổ quốc vào ngày 28/1/1941.",
+      },
+      {
+        q: "Hoàn thành luận điểm nổi tiếng của Hồ Chí Minh: “Nếu nước được ….. mà dân không hưởng hạnh phúc tự do, thì …… cũng chẳng có nghĩa lý gì”:",
+        opts: ["Độc lập","Tự do","Giải phóng","Hòa bình"],
+        correct: 0,
+        exp: "“Nếu nước được độc lập mà dân không hưởng hạnh phúc tự do, thì độc lập cũng chẳng có nghĩa lý gì”.",
+      },
+      {
+        q: "Theo Hồ Chí Minh, độc lập, tự do là:",
+        opts: ["Tạo hóa ban cho con người.","Trách nhiệm của các nước lớn phải bảo đảm cho các nước nhỏ.","Mong muốn của các dân tộc.","Quyền thiêng liêng, bất khả xâm phạm của tất cả các dân tộc."],
+        correct: 3,
+        exp: "Độc lập, tự do là quyền thiêng liêng, bất khả xâm phạm của tất cả các dân tộc.",
+      },
+      {
+        q: "Chủ tịch Hồ Chí Minh đã từng dạy học ở ngôi trường nào?",
+        opts: ["Trường Tiểu học Vinh","Trường Pháp Việt Đông Ba (Huế)","Trường Quốc học Huế","Trường Dục Thanh (Phan Thiết)"],
+        correct: 2,
+        exp: "Chủ tịch Hồ Chí Minh đã từng dạy học ở Trường Quốc học Huế.",
+      },
+      {
+        q: "Theo Hồ Chí Minh, cách mạng giải phóng dân tộc muốn thắng lợi phải:",
+        opts: ["Đi theo con đường của của các bậc cách mạng tiền bối Việt Nam.","Đi theo con đường của cách mạng Pháp, Mỹ","Đi theo con đường cách mạng vô sản.","Đi theo con đường Cách mạng tháng 10 Nga"],
+        correct: 2,
+        exp: "Cách mạng giải phóng dân tộc muốn thắng lợi phải đi theo con đường cách mạng vô sản.",
+      },
+      {
+        q: "Cách mạng giải phóng dân tộc muốn thắng lợi phải:",
+        opts: ["Có đoàn thể lãnh đạo.","Có Đảng của giai cấp công nhân lãnh đạo.","Có một cá nhân xuất sắc lãnh đạo.","Cả 3 ý đều sai"],
+        correct: 1,
+        exp: "Cách mạng giải phóng dân tộc muốn thắng lợi phải có Đảng của giai cấp công nhân lãnh đạo.",
+      },
+      {
+        q: "Cách mạng giải phóng dân tộc là sự nghiệp đoàn kết của:",
+        opts: ["Giai cấp công nhân","Giai cấp công nhân và nông dân","Toàn dân, trên cơ sở liên minh công - nông.","Các dân tộc thuộc địa"],
+        correct: 2,
+        exp: "Cách mạng giải phóng dân tộc là sự nghiệp đoàn kết của toàn dân, trên cơ sở liên minh công - nông.",
+      },
+      {
+        q: "Cách mạng giải phóng dân tộc muốn giành được thắng lợi cần phải:",
+        opts: ["Tiến hành chủ động và sáng tạo","Dựa vào sự thắng lợi của cách mạng ở các nước thuộc địa khác","Dựa vào thắng lợi của cách mạng vô sản ở chính quốc","Dựa vào sự giúp đỡ của các nước XHCN"],
+        correct: 0,
+        exp: "Cách mạng giải phóng dân tộc muốn giành được thắng lợi cần phải tiến hành chủ động và sáng tạo.",
+      },
+      {
+        q: "Cách mạng giải phóng dân tộc muốn giành được thắng lợi phải:",
+        opts: ["Thực hiện bằng con đường bạo động, ám sát những tên ác ôn","Sử dụng bạo lực cách mạng","Tiến hành đấu tranh nghị trường","Thực hiện đấu tranh chính trị hòa bình"],
+        correct: 1,
+        exp: "Cách mạng giải phóng dân tộc muốn giành được thắng lợi phải sử dụng bạo lực cách mạng.",
+      },
+
+      {
+        q: "Bạo lực cách mạng theo tư tưởng Hồ Chí Minh là:",
+        opts: ["Đấu tranh chính trị.","Đấu tranh vũ trang.","Kết hợp đấu tranh chính trị với đấu tranh vũ trang","Bạo động ám sát cá nhân"],
+        correct: 2,
+        exp: "Bạo lực cách mạng theo tư tưởng Hồ Chí Minh là kết hợp đấu tranh chính trị với đấu tranh vũ trang.",
+      },
+      {
+        q: "“Trong lúc này, thời cơ thuận lợi đã tới. Dù hy sinh tới đâu, dù phải đốt cháy cả dãy Trường Sơn cũng phải kiên quyết giành cho được độc lập”. Hồ Chí Minh đã chỉ thị điều đó cho ai?",
+        opts: ["Võ Nguyên Giáp","Trường Chinh","Phạm Văn Đồng","Vũ Kỳ"],
+        correct: 0,
+        exp: "Hồ Chí Minh đã chỉ thị điều đó cho Võ Nguyên Giáp.",
+      },
+      {
+        q: "Năm 1944, Hồ Chí Minh đã ra chỉ thị thành lập:",
+        opts: ["Việt Nam tuyên truyền giải phóng quân","Việt Nam giải phóng quân","Giải phóng quân","Việt Nam Cứu quốc quân"],
+        correct: 0,
+        exp: "Năm 1944, Hồ Chí Minh đã ra chỉ thị thành lập Việt Nam tuyên truyền giải phóng quân.",
+      },
+      {
+        q: "Nguyễn Ái Quốc gửi bản Yêu sách của nhân dân Việt Nam tới Hội nghị Véc - xây vào thời gian nào?",
+        opts: ["18/06/1917","18/06/1919","18/06/1920","18/06/1921"],
+        correct: 1,
+        exp: "Nguyễn Ái Quốc gửi bản Yêu sách của nhân dân Việt Nam tới Hội nghị Véc - xây vào ngày 18/06/1919.",
+      },
+      {
+        q: "Hồ Chí Minh đã dùng hình tượng nào để chỉ chủ nghĩa tư bản?",
+        opts: ["Con đỉa hai vòi","Con bạch tuộc","Con chim đại bàng","Con rắn độc"],
+        correct: 0,
+        exp: "Hồ Chí Minh đã dùng hình tượng con đỉa hai vòi để chỉ chủ nghĩa tư bản.",
+      },
+      {
+        q: "Năm 1946, trả lời phỏng vấn báo chí, Chủ tịch Hồ Chí Minh đã khẳng định ham muốn tột bậc của Người là:",
+        opts: ["Nước ta được hoàn toàn độc lập","Dân ta được hoàn toàn tự do","Đồng bào ai cũng có cơm ăn, áo mặc, ai cũng được học hành.","Tất cả các phương án"],
+        correct: 3,
+        exp: "Năm 1946, trả lời phỏng vấn báo chí, Chủ tịch Hồ Chí Minh đã khẳng định ham muốn tột bậc của Người là tất cả các phương án trên.",
+      },
+      {
+        q: "“Đồng bào Nam Bộ là dân nước Việt Nam. Sông có thể cạn, núi có thể mòn, song chân lý đó không bao giờ thay đổi”. Luận điểm trên được Chủ tịch Hồ Chí Minh đề cập đến trong tác phẩm:",
+        opts: ["Thư gửi Ủy ban nhân dân các Kỳ, tỉnh, huyện và làng 1945","Thư gửi đồng bào Nam Bộ 1946","Sửa đổi lối làm việc 1947","Di chúc 1969"],
+        correct: 1,
+        exp: "Luận điểm trên được Chủ tịch Hồ Chí Minh đề cập đến trong tác phẩm Thư gửi đồng bào Nam Bộ 1946.",
+      },
+      {
+        q: "Điền từ vào chỗ trống theo tư tưởng Hồ Chí Minh: 'Cách mệnh trước hết phải có đảng cách mệnh, để trong thì (....) dân chúng, ngoài thì liên lạc với các dân tộc bịáp bức và vô sản giai cấp mọi nơi'.",
+        opts: ["Tập hợp và lãnh đạo","Vận động và tổ chức","Tập hợp và giác ngộ","Tổ chức và lãnh đạo"],
+        correct: 1,
+        exp: "Cách mệnh trước hết phải có đảng cách mệnh, để trong thì vận động và tổ chức dân chúng, ngoài thì liên lạc với các dân tộc bịáp bức và vô sản giai cấp mọi nơi.",
+      },
+      {
+        q: "Điền từ còn thiếu: Theo Hồ Chí Minh: 'Đảng có (...) cách mạng mới thành công, cũng như người cầm lái có (....) thuyền mới chạy'.",
+        opts: ["Chắc","Sáng suốt","Vững","Đúng"],
+        correct: 2,
+        exp: "Đảng có vững cách mạng mới thành công, cũng như người cầm lái có vững thuyền mới chạy'.",
+      },
+      {
+        q: "Theo tư tưởng Hồ Chí Minh:",
+        opts: ["Cách mạng giải phóng dân tộc (CMGPDT) phụ thuộc hoàn toàn vào CMVS ở chính quốc","CMGPDT cùng diễn ra và giành thắng lợi đồng thời với CMVS ở chính quốc","CMGPDT có khả năng nổ ra và giành thắng lợi trước CMVS ở chính quốc","CMGPDT cần được tiến hành chủ động, sáng tạo và có khả năng giành thắng lợi trước CMVS ở chính quốc"],
+        correct: 3,
+        exp: "CMGPDT cần được tiến hành chủ động, sáng tạo và có khả năng giành thắng lợi trước CMVS ở chính quốc.",
+      },
+      
+      {
+        q: "Theo Hồ Chí Minh: “Công cuộc giải phóng anh em chỉ có thể thực hiện được bằng sự nỗ lực của …….”.",
+        opts: ["Giai cấp công nhân","Nhân dân lao động","Bản thân anh em","Cả dân tộc"],
+        correct: 2,
+        exp: "Công cuộc giải phóng anh em chỉ có thể thực hiện được bằng sự nỗ lực của bản thân anh em.",
+      },
+      {
+        q: "Luận điểm nổi tiếng: 'Không có gì quý hơn độc lập, tự do' được Hồ Chí Minh nói trong:",
+        opts: ["Đường kách mệnh 1927","Tuyên ngôn độc lập 1945","Lời kêu gọi toàn quốc kháng chiến 1946","Lời kêu gọi chống Mỹ cứu nước 1966"],
+        correct: 3,
+        exp: "Luận điểm nổi tiếng: 'Không có gì quý hơn độc lập, tự do' được Hồ Chí Minh nói trong Lời kêu gọi chống Mỹ cứu nước 1966.",
+      },
+      {
+        q: "Năm 1951, Hồ Chí Minh chỉ rõ mục đích của Đảng Lao động Việt Nam có thể gồm trong 8 chữ là:",
+        opts: ["Thực hiện đại đoàn kết toàn dân tộc","Đoàn kết toàn dân, xây dựng đất nước","Đoàn kết toàn dân, phụng sự Tổ quốc","Hòa bình, độc lập, thống nhất, giàu mạnh"],
+        correct: 2,
+        exp: "Năm 1951, Hồ Chí Minh chỉ rõ mục đích của Đảng Lao động Việt Nam có thể gồm trong 8 chữ là: Đoàn kết toàn dân, phụng sự Tổ quốc.",
+      },
+      {
+        q: "'Đảng có vững cách mạng mới thành công, cũng như người cầm lái có vững thuyền mới chạy'. Đó là khẳng định của Hồ Chí Minh trong tác phẩm:",
+        opts: ["Đường kách mệnh 1927","Tuyên ngôn độc lập 1945","Lời kêu gọi toàn quốc kháng chiến 1946","Lời kêu gọi chống Mỹ cứu nước 1966"],
+        correct: 0,
+        exp: "Đó là khẳng định của Hồ Chí Minh trong tác phẩm Đường kách mệnh 1927.",
+      },
+      {
+        q: "Trước khi rời bến Nhà Rồng, Nguyễn Tất Thành đã nói với bạn của mình: “Tôi muốn đi ra nước ngoài, xem nước Pháp và các nước khác. Sau khi xem xét họ làm như thế nào, tôi sẽ …….”. Hoàn thành câu nói trên:",
+        opts: ["Truyền đạt lại cho đồng bào chúng ta.","Trở về giúp đồng bào chúng ta","Lên kế hoạch giúp đồng bào chúng ta.","Chiến đấu chống lại kẻ thù của chúng ta"],
+        correct: 1,
+        exp: "Tôi sẽ trở về giúp đồng bào chúng ta.",
+      },
+      {
+        q: "Trong cuộc họp Hội đồng Chính phủ ngày 29/12/1966, Chủ tịch Hồ Chí Minh nêu lên luận điểm: “Không sợ ….., chỉ sợ không công bằng; Không sợ ….., chỉ sợ lòng dân không yên”. Điền từ con thiếu:",
+        opts: ["Thiếu … nghèo","Đói … nghèo","Thiếu … giàu","Kém … đầy"],
+        correct: 0,
+        exp: "Không sợ thiếu, chỉ sợ không công bằng; Không sợ đói, chỉ sợ lòng dân không yên.",
+      },
+      {
+        q: "Theo Hồ Chí Minh, muốn xây dựng chủ nghĩa xã hội thì trước hết cần có:",
+        opts: ["Khoa học kĩ thuật hiện đại","Lực lượng sản xuất phát triển","Cơ sở vật chất kĩ thuật","Những con người xã hội chủ nghĩa"],
+        correct: 3,
+        exp: "Những con người xã hội chủ nghĩa",
+      },
+      {
+        q: "Theo Tư tưởng Hồ Chí Minh, động lực chủ yếu của sự phát triển đất nước là:",
+        opts: ["Con người cá nhân","Đại đoàn kết dân tộc","Sự giúp đỡ của nước ngoài","Đoàn kết quốc tế"],
+        correct: 1,
+        exp: "Đại đoàn kết dân tộc",
+      },
+      {
+        q: "Hồ Chí Minh đã chỉ ra 3 lực cản của chủ nghĩa xã hội, đó là: Chủ nghĩa thực dân, thói quen truyền thống lạc hậu và (......).",
+        opts: ["Giặc đói","Giặc dốt","Giặc ngoại xâm","Chủ nghĩa cá nhân"],
+        correct: 3,
+        exp: "Chủ nghĩa cá nhân",
+      },
+      {
+        q: "Theo tư tưởng Hồ Chí Minh, chế độ chính trị mà chúng ta xây dựng là chế độ:",
+        opts: ["Do giai cấp công nhân làm chủ.","Do giai cấp nông dân làm chủ","Do nhân dân lao động làm chủ","Do Đảng cộng sản làm chủ"],
+        correct: 2,
+        exp: "Do nhân dân lao động làm chủ",
+      },
+
+      {
+        q: "Theo Hồ Chí Minh, nền kinh tế mà chúng ta xây dựng phải được tạo lập trên cơ sở:",
+        opts: ["Nền nông nghiệp hiện đại.","Nền công nghiệp hiện đại.","Khoa học kĩ thuật tiên tiến","Tất cả các đáp án"],
+        correct: 3,
+        exp: "Tất cả các đáp án",
+      },
+      {
+        q: "Theo Hồ Chí Minh, động lực quan trọng và bao trùm nhất của CNXH là:",
+        opts: ["Vốn","Tài nguyên thiên nhiên","Con người.","Khoa học kĩ thuật"],
+        correct: 2,
+        exp: "Con người.",
+      },
+      {
+        q: "Theo Hồ Chí Minh, nguyên tắc phân phối chủ yếu của CNXH là gì?",
+        opts: ["Làm theo năng lực hưởng theo nhu cầu","Phân phối bình quân cho tất cả mọi người","Làm ít hưởng nhiều, làm nhiều hưởng ít","Làm theo năng lực hưởng theo lao động"],
+        correct: 3,
+        exp: "Làm theo năng lực hưởng theo lao động",
+      },
+      {
+        q: "Muốn phát huy động lực của chủ nghĩa xã hội, theo Hồ Chí Minh cần phải chống:",
+        opts: ["Chủ nghĩa cá nhân, tham ô, lãng phí, quan liêu","Chia rẽ, bè phái, mất đoàn kết, vô kỷ luật, chủ quan, bảo thủ, giáo điều, lười biếng","Chủ nghĩa đế quốc thực dân","Tất cả đều đúng."],
+        correct: 3,
+        exp: "Tất cả đều đúng.",
+      },
+      {
+        q: "Theo quan điểm của chủ nghĩa Mác - Lênin, có mấy con đường quá độ lên CNXH?",
+        opts: ["2 con đường","3 con đường","4 con đường","5 con đường"],
+        correct: 0,
+        exp: "2 con đường",
+      },
+      {
+        q: "Theo Hồ Chí Minh, đặc điểm cơ bản nhất của nước ta trong thời kỳ quá độ là:",
+        opts: ["Từ một nước nông nghiệp lạc hậu tiến thẳng lên chủ nghĩa xã hội không phải trải qua giai đoạn phát triển tư bản chủ nghĩa.","Bị chiến tranh tàn phá nặng nề.","Từ một nước thuộc địa nửa phong kiến","Tất cả đều đúng."],
+        correct: 0,
+        exp: "Từ một nước nông nghiệp lạc hậu tiến thẳng lên chủ nghĩa xã hội không phải trải qua giai đoạn phát triển tư bản chủ nghĩa.",
+      },
+      {
+        q: "Căn cứ vào thực tiễn xây dựng chủ nghĩa xã hội ở Việt Nam, theo Hồ Chí Minh, độ dài của thời kỳ quá độ lên chủ nghĩa xã hội ở nước ta là:",
+        opts: ["15 năm","20 năm","50 năm","Lâu dài."],
+        correct: 3,
+        exp: "Lâu dài.",
+      },
+      {
+        q: "Nội dung nào sau đây được coi là vấn đề “cốt tử” trong xây dựng Đảng?",
+        opts: ["Xây dựng và thực hiện nghị quyết","Xây dựng và phát triển hệ Đảng viên","Củng cố lập trường chính trị","Xây dựng đường lối chính trị"],
+        correct: 3,
+        exp: "Xây dựng đường lối chính trị",
+      },
+      {
+        q: "Theo Hồ Chí Minh khi thực hiện bước đi trong thời kỳ quá độ, chúng ta phải thực hiện phương châm:",
+        opts: ["Tuần tự, dần dần, từ thấp đến cao","Tiến nhanh, mạnh, vững chắc lên CNXH","Tránh tư tưởng chủ quan, nóng vội, phù hợp với thực tiễn, hợp lòng dân.","Tất cả các đáp án"],
+        correct: 3,
+        exp: "Tất cả các đáp án",
+      },
+      {
+        q: "Theo Hồ Chí Minh, về bước đi trong thời kỳ quá độ, chúng ta phải:",
+        opts: ["Theo bước đi của các nước xã hội chủ nghĩa.","Căn cứ vào đặc điểm lịch sử cụ thể của nước ta, từ đó có bước đi phù hợp","Căn cứ vào đặc điểm lịch sử cụ thể của nước ta, từ đó có bước đi phù hợp, đi bước nào vững chắc bước ấy", "Đi theo các nước tư bản"],
+        correct: 2,
+        exp: "Căn cứ vào đặc điểm lịch sử cụ thể của nước ta, từ đó có bước đi phù hợp, đi bước nào vững chắc bước ấy",
+      },
+
+      {
+        q: "Theo Hồ Chí Minh, Đảng cộng sản Việt Nam là sản phẩm của sự kết hợp giữa:",
+        opts: ["Chủ nghĩa Mác - Lênin với phong trào công nhân","Chủ nghĩa Mác - Lênin với phong trào nông dân","Chủ nghĩa Mác - Lênin với phong trào yêu nước", "Chủ nghĩa Mác - Lênin với phong trào công nhân và phong trào yêu nước."],
+        correct: 3,
+        exp: "Chủ nghĩa Mác - Lênin với phong trào công nhân và phong trào yêu nước.",
+      },
+      {
+        q: "Tác phẩm nào sau đây không phải của Hồ Chí Minh?",
+        opts: ["Kháng chiến nhất định thắng lợi","Bản án chế độ thực dân Pháp","Đường kách mệnh", "Đời sống mới"],
+        correct: 0,
+        exp: "Kháng chiến nhất định thắng lợi",
+      },
+      {
+        q: "Đảng Cộng sản Việt Nam là Đảng của giai cấp công nhân, của nhân dân lao động và của toàn dân tộc. Điều đó khẳng định:",
+        opts: ["Vai trò của Đảng","Lợi ích của Đảng","Lý tưởng của Đảng", "Bản chất của Đảng"],
+        correct: 3,
+        exp: "Bản chất của Đảng",
+      },
+      {
+        q: "Nguyên tắc xây dựng Đảng này được Hồ Chí Minh coi như là một 'thang thuốc'để chữa các 'bệnh' trong Đảng. Nguyên tắc đó là:",
+        opts: ["Tập trung dân chủ","Kỉ luật nghiêm minh tự giác","Tự phê bình và phê bình", "Đoàn kết thống nhất trong Đảng"],
+        correct: 2,
+        exp: "Tự phê bình và phê bình",
+      },
+      {
+        q: "Theo tư tưởng Hồ Chí Minh, luận điểm Đảng Cộng sản là nhân tố quyết định hàng đầu để đưa cách mạng Việt Nam đi đến thắng lợi là:",
+        opts: ["Xác định vị thế cầm quyền của Đảng","Xác định mục đích của Đảng","Xác định nhiệm vụ của Đảng.", "Xác định vai trò lãnh đạo của Đảng."],
+        correct: 3,
+        exp: "Xác định vai trò lãnh đạo của Đảng.",
+      },
+      {
+        q: "Theo Hồ Chí Minh, Đảng Cộng sản Việt Nam phải lấy chủ nghĩa Mác - Lênin “làm cốt” nghĩa là:",
+        opts: ["Đảng Cộng sản Việt Nam phải lấy chủ nghĩa Mác - Lênin làm nền tảng tư tưởng","Đảng Cộng sản Việt Nam phải lấy chủ nghĩa Mác - Lênin làm nền tảng tư tưởng và kim chỉ nam","Đảng Cộng sản Việt Nam phải lấy chủ nghĩa Mác - Lênin làm kim chỉ nam", "Không đáp án nào đúng"],
+        correct: 1,
+        exp: "Đảng Cộng sản Việt Nam phải lấy chủ nghĩa Mác - Lênin làm nền tảng tư tưởng và kim chỉ nam",
+      },
+      {
+        q: "Khi xác định lực lượng của khối đại đoàn kết toàn dân tộc, Hồ Chí Minh chỉ rõ: “Ta đoàn kết để đấu tranh cho thống nhất và độc lập của Tổ quốc, Ta còn phải đoàn kết để xây dựng nước nhà. Ai có tài, có đức, có sức, có …… thì ta đoàn kết với họ”.Hoàn thành vào phần còn thiếu:",
+        opts: ["Lòng phụng sự tổ quốc và phục vụ nhân dân","Đạo đức trong sáng","Ý chí cách mạng", "Lòng yêu nước"],
+        correct: 0,
+        exp: "Ta đoàn kết để đấu tranh cho thống nhất và độc lập của Tổ quốc, Ta còn phải đoàn kết để xây dựng nước nhà. Ai có tài, có đức, có sức, có lòng phụng sự tổ quốc và phục vụ nhân dân thì ta đoàn kết với họ",
+      },
+      {
+        q: "Trong tư tưởng Hồ Chí Minh, đại đoàn kết toàn dân tộc:",
+        opts: ["Là vấn đề cơ bản nhất","Là vấn đề sống còn của cách mạng.","Là vấn đề có ý nghĩa chiến lược, quyết định thành công của cách mạng.", "Là vấn đề số một của cách mạng"],
+        correct: 2,
+        exp: "Là vấn đề có ý nghĩa chiến lược, quyết định thành công của cách mạng.",
+      },
+      {
+        q: "Trong tư tưởng Hồ Chí Minh, đại đoàn kết dân tộc:",
+        opts: ["Là mục tiêu của cách mạng.","Là nhiệm vụ hàng đầu của cách mạng","Là vấn đề số một của cách mạng", "Là mục tiêu, nhiệm vụ hàng đầu của Đảng, của dân tộc."],
+        correct: 3,
+        exp: "Là mục tiêu, nhiệm vụ hàng đầu của Đảng, của dân tộc.",
+      },
+      {
+        q: "Trong tư tưởng Hồ Chí Minh, “điểm này mà thực hiện tốt thì đẻ ra con cháu đều tốt”. Điểm đó là:",
+        opts: ["Đại đoàn kết toàn dân tộc","Lòng yêu nước nồng nàn","Tinh thần chiến đấu anh dũng", "Sự giúp đỡ của bè bạn thế giới"],
+        correct: 0,
+        exp: "Đại đoàn kết toàn dân tộc",
+      },
+
+      {
+        q: "Trong tư tưởng Hồ Chí Minh, nền tảng của khối đại đoàn kết dân tộc là:",
+        opts: ["Liên minh công-nông","Liên minh công-nông, lao động trí óc","Liên minh công-nông và tư sản", "Liên minh công-nông và địa chủ"],
+        correct: 1,
+        exp: "Liên minh công-nông, lao động trí óc",
+      },
+      {
+        q: "Trong Tuyên ngôn độc lập, Hồ Chí Minh đã khẳng định quyết tâm của nhân dân ta: “Toàn thể dân tộc Việt Nam quyết đem (.....) để giữ vững quyền tự do, độc lập ấy”. Điền từ vào chỗ trống:",
+        opts: ["Toàn bộ sức lực","Tất cả tinh thần và lực lượng","Tính mạng và của cải", "Tất cả tinh thần và lực lượng, tính mạng và của cải"],
+        correct: 3,
+        exp: "Tất cả tinh thần và lực lượng, tính mạng và của cải",
+      },
+      {
+        q: "Theo tư tưởng Hồ Chí Minh, Đảng là người “đầy tớ” của dân. Ý nghĩa của từ “đầy tớ” là:",
+        opts: ["Tôi tớ, tôi đòi","Theo đuôi quần chúng","Tận tâm, tận lực phụng sự nhân dân", "Không đáp án nào đúng"],
+        correct: 2,
+        exp: "Tận tâm, tận lực phụng sự nhân dân",
+      },
+      {
+        q: "Khi đề cập đến phương thức xây dựng khối đại đoàn kết toàn dân tộc, Hồ Chí Minh khẳng định: “Dân vận khéo, việc gì cũng thành công”. Luận điểm trên được Hồ Chí Minh đề cập đến trong tác phẩm:",
+        opts: ["Dân vận","Sửa đổi lối làm việc","Đạo đức cách mạng", "Di chúc"],
+        correct: 0,
+        exp: "Dân vận",
+      },
+      {
+        q: "Chủ tịch Hồ Chí Minh nhấn mạnh: “Đảng ta là Đảng cầm quyền. Mỗi đảng viên và cán bộ phải thật sự thấm nhuần đạo đức cách mạng, thật sự cần kiệm liêm chính, chí công vô tư”. Luận điểm trên được Hồ Chí Minh đề cập đến trong tác phẩm nào?",
+        opts: ["Đường kách mệnh 1927","Đời sống mới 1947","Đạo đức cách mạng 1958", "Di chúc 1969"],
+        correct: 3,
+        exp: "Di chúc 1969",
+      },
+      {
+        q: "Điền từ vào chỗ trống: Chủ tịch Hồ Chí Minh đã khẳng định chính sách ngoại giao của Việt Nam sau khi tuyên bố độc lập là:'Làm bạn với tất cả …… và không gây thù oán với một ai'.",
+        opts: ["Tất cả các dân tộc","Các nước xã hội chủ nghĩa","Mọi nước dân chủ", "Các dân tộc bị áp bức"],
+        correct: 3,
+        exp: "Làm bạn với tất cả các dân tộc bị áp bức và không gây thù oán với một ai.",
+      },
+      {
+        q: "Khi nói về tinh thần đoàn kết quốc tế, Hồ Chí Minh đã viết: 'Quan sơn muôn dặm một nhà, ……. đều là anh em!'. Điền từ vào chỗ trống:",
+        opts: ["Lao động thế giới","Bốn phương vô sản","Vàng đen trắng đỏ", "Nhân dân thế giới"],
+        correct: 1,
+        exp: "Bốn phương vô sản",
+      },
+      {
+        q: "Chọn phương án đúng nhất điền vào chỗ trống để hoàn thiện câu nói của Hồ Chí Minh: “Thi đua là yêu nước, yêu nước là thi đua. Và những người thi đua là những người……”",
+        opts: ["Giỏi nhất","Hăng hái nhất","Yêu nước nhất", "Cách mạng nhất"],
+        correct: 2,
+        exp: "Đại đoàn kết toàn dân tộc",
+      },
+      {
+        q: "Trong phiên họp đầu tiên của Chính phủ lâm thời nước Việt Nam Dân chủ Cộng hòa, Chủ tịch Hồ Chí Minh đã nêu ra 6 nhiệm vụ cấp bách cần phải giải quyết. Phiên họp đó diễn ra vào thời gian nào?",
+        opts: ["02/9/1945","03/9/1945","04/9/1945", "05/9/1945"],
+        correct: 1,
+        exp: "03/9/1945",
+      },
+      {
+        q: "Theo Hồ Chí Minh, 'Nước ta là nước dân chủ, nghĩa là (.....)'",
+        opts: ["Nước nhà do nhân dân làm chủ","Dân quản lý điều hành đất nước","Dân có mọi quyền hành", "Dân quyết định mọi vấn đề của đất nước"],
+        correct: 0,
+        exp: "Nước ta là nước dân chủ, nghĩa là nước nhà do nhân dân làm chủ",
+      },
+
+      {
+        q: "Nhà nước của dân theo tư tưởng Hồ Chí Minh nghĩa là:",
+        opts: ["Mọi quyền lực trong nhà nước và trong xã hội đều thuộc về nhân dân","Mọi công việc của nhà nước do dân quyết định","Đại biểu của nhà nước do dân bầu ra", "Tất cả đều đúng"],
+        correct: 0,
+        exp: "Mọi quyền lực trong nhà nước và trong xã hội đều thuộc về nhân dân",
+      },
+      {
+        q: "Nhà nước do dân theo tư tưởng Hồ Chí Minh:",
+        opts: ["Đại biểu của nhà nước do dân lựa chọn","Dân ủng hộ, giúp đỡ, đóng thuế để nhà nước chi tiêu, hoạt động","Dân có quyền kiểm soát, giám sát, bãi miễn nếu đại biểu không làm tròn sự uỷ thác của dân", "Tất cả đều đúng"],
+        correct: 3,
+        exp: "Tất cả đều đúng",
+      },
+      {
+        q: "Nhà nước vì dân theo tư tưởng Hồ Chí Minh là:",
+        opts: ["Phục vụ vì lợi ích và nguyện vọng chính đáng của nhân dân","Mọi chủ trương, chính sách, pháp luật đều xuất phát từ lợi ích của dân","Nhà nước trong sạch, không có bất cứ một đặc quyền, đặc lợi nào", "Tất cả đều đúng"],
+        correct: 3,
+        exp: "Tất cả đều đúng",
+      },
+      {
+        q: "Một nhà nước pháp quyền có hiệu lực pháp lý mạnh mẽ theo tư tưởng Hồ Chí Minh phải là:",
+        opts: ["Nhà nước hợp hiến, hợp pháp","Nhà nước thượng tôn pháp luật","Nhà nước pháp quyền nhân nghĩa", "Tất cả đều đúng."],
+        correct: 3,
+        exp: "Tất cả đều đúng.",
+      },
+      {
+        q: "Cơ chế vận hành của hệ thống chính trị nước ta là:",
+        opts: ["Nhà nước lãnh đạo, Đảng quản lý, nhân dân làm chủ","Nhà nước làm chủ, Đảng lãnh đạo, nhân dân quản lý","Đảng lãnh đạo, nhà nước quản lý, nhân dân làm chủ", "Nhân dân lãnh đạo, nhà nước quản lý, đảng làm chủ"],
+        correct: 2,
+        exp: "Đảng lãnh đạo, nhà nước quản lý, nhân dân làm chủ",
+      },
+      {
+        q: "“Không có việc gì khó/ Chỉ sợ lòng không bền/ Đào núi và lấp biển/ Quyết chí ắt làm nên”. Câu thơ nổi tiếng trên được Hồ Chí Minh nói vào năm:",
+        opts: ["1945","1946","1950", "1969"],
+        correct: 2,
+        exp: "1950",
+      },
+      {
+        q: "Theo tư tưởng Hồ Chí Minh, đạo đức có vai trò:",
+        opts: ["Là nền tảng lý luận của người cách mạng","Là gốc của người cách mạng, là nền tảng tinh thần của xã hội","Là định hướng lý tưởng của người cách mạng", "Là tư tưởng của người cách mạng"],
+        correct: 1,
+        exp: "Là gốc của người cách mạng, là nền tảng tinh thần của xã hội",
+      },
+      {
+        q: "Theo Hồ Chí Minh, muốn xây dựng đạo đức mới phải thực hiện nguyên tắc:",
+        opts: ["Nói đi đôi với làm","Xây đi đôi với chống","Tu dưỡng đạo đức suốt đời", "Tất cả đều đúng."],
+        correct: 3,
+        exp: "Tất cả đều đúng.",
+      },
+      {
+        q: "Điền vào phần còn thiếu theo quan điểm Hồ Chí Minh: “Trời có bốn mùa Xuân, Hạ, Thu, Đông. Đất có bốn phương Đông, Tây, Nam, Bắc. Người có…”:",
+        opts: ["Bốn đức Cần, Kiệm, Liêm, Chính","Tinh thần quốc tế trong sáng","Phẩm chất trung với nước, hiếu với dân", "Yêu thương con người, sống có tình nghĩa"],
+        correct: 0,
+        exp: "Bốn đức Cần, Kiệm, Liêm, Chính",
+      },
+      {
+        q: "Hoàn thành luận điểm của Hồ Chí Minh, “Trong bầu trời không gì quý bằng ... Trong thế giới không gì mạnh bằng lực lượng đoàn kết của …”:",
+        opts: ["Bạn bè","Nhân dân","Tình cảm", "Con người"],
+        correct: 1,
+        exp: "Nhân dân",
+      },
+
+      {
+        q: "Trong Bài nói tại lớp bồi dưỡng cán bộ lãnh đạo cấp huyện ngày 18/1/1967, Hồ Chí Minh khẳng định: “Dễ mười lần không dân cũng …., Khó trăm lần dân liệu cũng xong”. Từ còn thiếu là:",
+        opts: ["Mệt","Khổ","Chịu", "Bỏ"],
+        correct: 2,
+        exp: "Chịu",
+      },
+      {
+        q: "Trong thư gửi các họa sĩ nhân triển lãm hội họa 1951, Chủ tịch Hồ Chí Minh khẳng định: “Văn hóa nghệ thuật cũng là một mặt trận. Anh chị em là chiến sĩ trên mặt trận ấy”. Quan điểm trên của Hồ Chí Minh muốn đề cập đến:",
+        opts: ["Vai trò của văn hóa nghệ thuật","Đặc điểm của nghệ sĩ","Vai trò của nhà nước", "Tất cả đều đúng"],
+        correct: 0,
+        exp: "Nhân dân",
+      },
+      {
+        q: "Ngày 28/11/1959, Chủ tịch Hồ Chí Minh viết bài trên báo Nhân dân và phát động:",
+        opts: ["Tết thiếu nhi","Tết trồng cây","Tết Đoan ngọ", "Tất cả đáp án trên"],
+        correct: 1,
+        exp: "Tết trồng cây",
+      },
+      {
+        q: "Năm 1923, tạp chí Ogoniok (Ngọn lửa nhỏ) số 39 đã đăng bài về Nguyễn Ái Quốc, trong đó có viết: “Từ Nguyễn Ái Quốc tỏa ra một nền văn hóa, không phải là văn hóa châu Âu mà có lẽ là nền văn hóa của tương lai”. Tác giả của nhận xét đó là ai?",
+        opts: ["Nhà văn Sơn Tùng","Nhà nghiên cứu Ép-ghê-nhi Ca-bê-lép","Nhà thơ Xô viết Ô-xip Man-đen-stam", "V.I.Lênin"],
+        correct: 2,
+        exp: "Nhân dân",
+      },
+      {
+        q: "Trong thư gửi thanh niên và nhi đồng toàn quốc nhân dịp Tết sắp đến, Chủ tịch Hồ Chí Minh viết: “Một năm (....) từ mùa xuân. Một đời (.....) từ tuổi trẻ. Tuổi trẻ là mùa xuân của xã hội”. Điền từ vào chỗ trống:",
+        opts: ["Bắt đầu","Khởi đầu","Bước đầu", "Mở đầu"],
+        correct: 1,
+        exp: "Khởi đầu",
+      },
+      {
+        q: "Theo Hồ Chí Minh: “Sức có mạnh mới gánh được nặng và đi được xa. Người cách mạng phải có (.....) làm nền tảng mới hoàn thành được nhiệm vụ cách mạng vẻ vang”.",
+        opts: ["Sức khỏe","Tài năng","Tài năng và đức độ", "Đạo đức cách mạng"],
+        correct: 3,
+        exp: "Đạo đức cách mạng",
+      },
+      {
+        q: "Theo Hồ Chí Minh: “Văn hóa (......) cho quốc dân đi”",
+        opts: ["Dẫn đường","Mở đường","Soi đường", "Tìm đường"],
+        correct: 2,
+        exp: "Soi đường",
+      },
+      {
+        q: "Theo tư tưởng Hồ Chí Minh: “Học để làm việc, (....), làm cán bộ”",
+        opts: ["Làm cách mạng","Phục vụ nhân dân","Có tri thức", "Làm người"],
+        correct: 3,
+        exp: "Làm người",
+      },
+      {
+        q: "Hồ Chí Minh đưa ra hình ảnh: “Ngọc càng mài càng sáng, vàng càng luyện càng trong” để nói về:",
+        opts: ["Ý chí cách mạng","Đạo đức cách mạng","Truyền thống yêu nước", "Truyền thống đại đoàn kết"],
+        correct: 1,
+        exp: "Đạo đức cách mạng",
+      },
+      {
+        q: "Chỉ thị 05-CT/TW về “Đẩy mạnh học tập và làm theo tư tưởng, đạo đức, phong cách Hồ Chí Minh” được Bộ Chính trị ban hành vào ngày:",
+        opts: ["15/5/2016","19/5/2016","19/5/2017", "02/9/2018"],
+        correct: 0,
+        exp: "Nhân dân",
+      },
+    ];
+
+    // ====== State ======
+    const TOTAL_CELLS = 100;
+    let availableIndices = []; // indices of questions remaining to use
+    let grid = document.getElementById('grid');
+    let overlay = document.getElementById('overlay');
+    let modalQuestion = document.getElementById('modalQuestion');
+    let modalOptions = document.getElementById('modalOptions');
+    let feedback = document.getElementById('feedback');
+    let explanation = document.getElementById('explanation');
+    let info = document.getElementById('info');
+
+    // Map cellNumber -> {questionIndex, answered}
+    const cellState = new Array(TOTAL_CELLS).fill(null).map(()=>({answered:false, qidx:null}));
+
+    function init() {
+      // fill availableIndices with 0..questions.length-1
+      availableIndices = questions.map((_,i)=>i);
+      shuffleArray(availableIndices);
+
+      // build grid
+      grid.innerHTML = '';
+      for (let i=0;i<TOTAL_CELLS;i++){
+        const n = i+1;
+        const div = document.createElement('div');
+        div.className = 'cell';
+        div.dataset.cell = i;
+        div.textContent = n;
+        div.addEventListener('click', onCellClick);
+        grid.appendChild(div);
+        cellState[i] = {answered:false, qidx:null};
+      }
+      updateInfo();
+    }
+
+    function updateInfo(){
+      const used = cellState.filter(c=>c.answered).length;
+      info.textContent = `Đã trả lời: ${used} / ${questions.length} (chỉ dùng ${questions.length} câu hiện có)`;
+    }
+
+    function onCellClick(e){
+      const el = e.currentTarget;
+      const idx = +el.dataset.cell;
+      if (cellState[idx].answered) return; // ignore
+
+      if (availableIndices.length === 0) {
+        alert("Không còn câu hỏi (đã dùng hết 10 câu). Nhấn 'Làm lại toàn bộ' để chơi lại.");
+        return;
+      }
+
+      // lấy 1 câu ngẫu nhiên từ availableIndices (đã shuffled)
+      const qIndex = availableIndices.pop(); // use last
+      cellState[idx].qidx = qIndex;
+      showQuestionModal(idx, qIndex, el);
+    }
+
+    function showQuestionModal(cellIdx, qIndex, cellEl) {
+      const q = questions[qIndex];
+      modalQuestion.textContent = `Câu hỏi: ${q.q}`;
+      modalOptions.innerHTML = '';
+      feedback.textContent = '';
+      explanation.textContent = '';
+
+      q.opts.forEach((opt,i)=>{
+        const b = document.createElement('button');
+        b.className = 'opt-btn';
+        b.innerHTML = `${String.fromCharCode(65+i)}. ${opt}`;
+        b.onclick = () => {
+          handleAnswer(cellIdx, qIndex, i, b);
+        };
+        modalOptions.appendChild(b);
+      });
+
+      overlay.classList.remove('hidden');
+      overlay.setAttribute('aria-hidden','false');
+      // store current cell for close logic
+      overlay.currentCell = cellIdx;
+    }
+
+    function handleAnswer(cellIdx, qIndex, selectedIdx, btnEl) {
+      const q = questions[qIndex];
+      // disable all options
+      document.querySelectorAll('.opt-btn').forEach(b => b.classList.add('disabled'));
+      const correct = selectedIdx === q.correct;
+      feedback.textContent = correct ? '✅ Chính xác!' : '❌ Sai rồi.';
+      feedback.style.color = correct ? 'green' : 'red';
+      explanation.textContent = q.exp;
+
+      // mark cell as answered and gray out
+      const cellDiv = document.querySelector(`.cell[data-cell="${cellIdx}"]`);
+      cellDiv.classList.add('answered');
+      cellState[cellIdx].answered = true;
+
+      updateInfo();
+    }
+
+    // close modal handler
+    document.getElementById('closeBtn').addEventListener('click', ()=> {
+      overlay.classList.add('hidden');
+      overlay.setAttribute('aria-hidden','true');
+      // if no further questions left, keep cells answered grey; otherwise just return
+    });
+
+    // reset all
+    document.getElementById('resetAll').addEventListener('click', ()=> {
+      if (!confirm('Bạn muốn làm lại toàn bộ? Tất cả ô sẽ được phục hồi.')) return;
+      init();
+    });
+
+    // show stats (simple)
+    document.getElementById('showStats').addEventListener('click', ()=> {
+      const answeredCount = cellState.filter(c=>c.answered).length;
+      alert(`Đã trả lời: ${answeredCount} ô\nCòn lại câu chưa dùng: ${availableIndices.length}`);
+    });
+
+    // utility: shuffle
+    function shuffleArray(a){
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+    }
+
+    // init on load
+    init();
+  </script>
+</body>
+</html>
